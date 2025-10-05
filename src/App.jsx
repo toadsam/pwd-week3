@@ -12,7 +12,7 @@ import ListPage from './pages/ListPage';
 import DetailPage from './pages/DetailPage';
 import PopularPage from './pages/PopularPage';
 import AdminPage from './pages/AdminPage';
-import SubmissionsPage from './pages/SubmissionsPage';
+import SubmissionsPage from './pages/SubmissionsPage.jsx';
 import SubmitPage from './pages/SubmitPage';
 
 // Components
