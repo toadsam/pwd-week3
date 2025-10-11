@@ -135,7 +135,7 @@ function AdminPage() {
     onSuccess: () => {
       toast.info('삭제 완료');
       queryClient.invalidateQueries({ queryKey: ['restaurants'] });
-      if (selected?._id) setSelected(null);
+      if (selected?.id) setSelected(null);
     },
   });
 
@@ -175,9 +175,9 @@ function AdminPage() {
       image: form.image?.trim() || undefined,
     };
 
-    if (selected?._id) {
-      // ✅ _id 기준으로 수정 요청
-      await updateMutation.mutateAsync({ id: selected._id, payload });
+    if (selected?.id) {
+      // ✅ 숫자 id 기준으로 수정 요청
+      await updateMutation.mutateAsync({ id: selected.id, payload });
     } else {
       await createMutation.mutateAsync(payload);
     }
@@ -186,8 +186,8 @@ function AdminPage() {
   // ✅ 삭제 버튼
   const onDelete = async (row) => {
     if (!confirm(`[삭제] ${row.name}을(를) 삭제할까요?`)) return;
-    // ✅ _id 기준으로 삭제 요청
-    await deleteMutation.mutateAsync(row._id);
+    // ✅ 숫자 id 기준으로 삭제 요청
+    await deleteMutation.mutateAsync(row.id);
   };
 
   const categories = useMemo(
@@ -218,7 +218,7 @@ function AdminPage() {
             </thead>
             <tbody>
               {restaurants.map((r) => (
-                <tr key={r._id}>
+                <tr key={r.id}>
                   <td>{r.id}</td>
                   <td>{r.name}</td>
                   <td>{r.category}</td>
