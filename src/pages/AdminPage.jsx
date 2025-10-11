@@ -1,4 +1,4 @@
-//src/pages/AdminPage.jsx
+// src/pages/AdminPage.jsx
 import React, { useMemo, useState } from 'react';
 import styled from '@emotion/styled';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,6 +6,7 @@ import { restaurantAPI } from '../services/api';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
+// ----------------------------- 스타일 정의 -----------------------------
 const Container = styled.div`
   padding: 2rem 0;
 `;
@@ -30,7 +31,11 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  th, td { border-bottom: 1px solid #eee; padding: 0.5rem; text-align: left; }
+  th, td {
+    border-bottom: 1px solid #eee;
+    padding: 0.5rem;
+    text-align: left;
+  }
   th { background: #fafafa; }
   tr:hover { background: #fafafa; }
 `;
@@ -84,10 +89,12 @@ const Select = styled.select`
   border-radius: 6px;
 `;
 
+// ----------------------------- 컴포넌트 시작 -----------------------------
 function AdminPage() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState(null);
 
+  // ✅ 레스토랑 목록 불러오기
   const { data, isLoading, error } = useQuery({
     queryKey: ['restaurants'],
     queryFn: restaurantAPI.getRestaurants,
@@ -103,6 +110,7 @@ function AdminPage() {
     formState: { isSubmitting },
   } = useForm();
 
+  // ✅ 생성
   const createMutation = useMutation({
     mutationFn: restaurantAPI.createRestaurant,
     onSuccess: () => {
@@ -112,6 +120,7 @@ function AdminPage() {
     },
   });
 
+  // ✅ 수정
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => restaurantAPI.updateRestaurant(id, payload),
     onSuccess: () => {
@@ -120,15 +129,17 @@ function AdminPage() {
     },
   });
 
+  // ✅ 삭제
   const deleteMutation = useMutation({
     mutationFn: (id) => restaurantAPI.deleteRestaurant(id),
     onSuccess: () => {
       toast.info('삭제 완료');
       queryClient.invalidateQueries({ queryKey: ['restaurants'] });
-      if (selected?.id) setSelected(null);
+      if (selected?._id) setSelected(null);
     },
   });
 
+  // ✅ 수정 클릭 시 폼에 데이터 채우기
   const onEdit = (row) => {
     setSelected(row);
     setValue('name', row.name);
@@ -141,11 +152,13 @@ function AdminPage() {
     setValue('image', row.image || '');
   };
 
+  // ✅ 폼 초기화
   const onResetForm = () => {
     setSelected(null);
     reset();
   };
 
+  // ✅ 생성 또는 수정
   const onSubmit = async (form) => {
     const recommendedMenu = typeof form.recommendedMenu === 'string'
       ? form.recommendedMenu.split(/[\n,]/).map((s) => s.trim()).filter(Boolean)
@@ -162,27 +175,35 @@ function AdminPage() {
       image: form.image?.trim() || undefined,
     };
 
-    if (selected?.id) {
-      await updateMutation.mutateAsync({ id: selected.id, payload });
+    if (selected?._id) {
+      // ✅ _id 기준으로 수정 요청
+      await updateMutation.mutateAsync({ id: selected._id, payload });
     } else {
       await createMutation.mutateAsync(payload);
     }
   };
 
+  // ✅ 삭제 버튼
   const onDelete = async (row) => {
     if (!confirm(`[삭제] ${row.name}을(를) 삭제할까요?`)) return;
-    await deleteMutation.mutateAsync(row.id);
+    // ✅ _id 기준으로 삭제 요청
+    await deleteMutation.mutateAsync(row._id);
   };
 
-  const categories = useMemo(() => ['한식','중식','일식','양식','아시안','분식','카페','기타'], []);
+  const categories = useMemo(
+    () => ['한식', '중식', '일식', '양식', '아시안', '분식', '카페', '기타'],
+    []
+  );
 
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div>에러: {error.message}</div>;
 
+  // ----------------------------- 렌더링 -----------------------------
   return (
     <Container>
       <Title>관리자 - 레스토랑 관리</Title>
       <Grid>
+        {/* ✅ 왼쪽: 리스트 */}
         <Panel>
           <Table>
             <thead>
@@ -197,7 +218,7 @@ function AdminPage() {
             </thead>
             <tbody>
               {restaurants.map((r) => (
-                <tr key={r.id}>
+                <tr key={r._id}>
                   <td>{r.id}</td>
                   <td>{r.name}</td>
                   <td>{r.category}</td>
@@ -215,6 +236,7 @@ function AdminPage() {
           </Table>
         </Panel>
 
+        {/* ✅ 오른쪽: 생성/수정 폼 */}
         <Panel>
           <h3>{selected ? `수정: ${selected.name}` : '새 레스토랑 추가'}</h3>
           <form onSubmit={handleSubmit(onSubmit)}>
